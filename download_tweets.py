@@ -1,8 +1,14 @@
+# Data extraction: scrape a user's tweets using twint
+# Processing: get rid of rewtweets, URL'S, links, and any other sensitive info, save to a CSV 
+# Training: train a LSTM
+
+# Adapted using source code from download_tweets.py, found at: https://minimaxir.com/2020/01/twitter-gpt2-bot/import twint
 import twint
 import fire
 import csv
 import os
 import logging
+import re
 from tqdm import tqdm
 from datetime import datetime
 from time import sleep
@@ -10,6 +16,26 @@ from time import sleep
 # Suppress warnings
 logger = logging.getLogger()
 logger.disabled = True
+
+def is_reply(tweet):
+    """
+    Determines if the tweet is a reply to another tweet.
+    Requires somewhat hacky heuristics since not included w/ twint
+    """
+
+    # If not a reply to another user, there will only be 1 entry in reply_to
+    if len(tweet.reply_to) == 1:
+        return False
+
+    # Check to see if any of the other users "replied" are in the tweet text
+    users = tweet.reply_to[1:]
+    print(users)
+    conversations = [user["screen_name"] in tweet.tweet for user in users]
+
+    # If any if the usernames are not present in text, then it must be a reply
+    if sum(conversations) < len(users):
+        return True
+    return False
 
 def download_tweets(user=None, limit=None, include_replies=False, include_links=False, strip_usertags=False, strip_hashtags=False):
   # According to twint documentation, limit must be a multiple of 20
@@ -81,7 +107,7 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
         c = twint.Config()
         c.Store_object = True
         c.Hide_output = True
-        c.Username = username
+        c.Username = user
         c.Limit = 40
         c.Resume = ".temp"
 
@@ -110,10 +136,12 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
       else:
         pbar.update(40)
 
-      oldest_tweet = datetime.utcfromtimestamp(
-          tweet_data[-1].datetime / 1000.0
-      ).strftime("%Y-%m-%d %H:%M:%S")
+      oldest_tweet = datetime.utcfromtimestamp(tweet_data[-1].datetime / 1000.0).strftime("%Y-%m-%d %H:%M:%S")
       pbar.set_description("Oldest Tweet: " + oldest_tweet)
 
   pbar.close()
   os.remove(".temp")
+
+# To run with CLI
+if __name__ == "__main__":
+  fire.Fire(download_tweets("somnimoo"))
