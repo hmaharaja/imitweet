@@ -29,7 +29,6 @@ def is_reply(tweet):
 
     # Check to see if any of the other users "replied" are in the tweet text
     users = tweet.reply_to[1:]
-    print(users)
     conversations = [user["screen_name"] in tweet.tweet for user in users]
 
     # If any if the usernames are not present in text, then it must be a reply
@@ -75,7 +74,7 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
     w = csv.writer(f)
     w.writerow(["tweets"])  # gpt-2-simple expects a CSV header by default
 
-    pbar = tqdm(range(limit), desc="Oldest Tweet")
+    pbar = tqdm(range(limit), desc="Creating CSV:")
     for i in range((limit // 20) - 1):
       tweet_data = []
 
@@ -83,7 +82,7 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
       # this with twint.run.Profile(c) and setting c.Profile_full = True
 
       # twint may fail; give it up to 5 tries to return tweets
-      for _ in range(0, 4):
+      for j in range(0, 4):
         if len(tweet_data) == 0:
           c = twint.Config()
           c.Store_object = True
@@ -136,12 +135,16 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
       else:
         pbar.update(40)
 
-      oldest_tweet = datetime.utcfromtimestamp(tweet_data[-1].datetime / 1000.0).strftime("%Y-%m-%d %H:%M:%S")
-      pbar.set_description("Oldest Tweet: " + oldest_tweet)
+      #print(tweet_data[-1].datetime)
+      #oldest_tweet = datetime.utcfromtimestamp(tweet_data[-1].datetime / 1000.0).strftime("%Y-%m-%d %H:%M:%S")
+      #pbar.set_description("Oldest Tweet: " + oldest_tweet)
 
   pbar.close()
   os.remove(".temp")
 
-# To run with CLI
+# Running directly from the program, not the CLI, to make it easier to turn this into an application
 if __name__ == "__main__":
-  fire.Fire(download_tweets("somnimoo"))
+  username = input("Please enter the username of the account you want to imitate, WITHOUT the @: ")
+
+  # Need to add an exception for when the account searched doesn't exist. Maybe also one for when it doesn't have any tweets.
+  fire.Fire(download_tweets(username))
