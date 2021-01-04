@@ -2,7 +2,7 @@
 # Processing: get rid of rewtweets, URL'S, links, and any other sensitive info, save to a CSV 
 # Training: train a LSTM
 
-# Adapted using source code from download_tweets.py, found at: https://minimaxir.com/2020/01/twitter-gpt2-bot/import twint
+# Adapted using source code from download_tweets.py, found at: https://minimaxir.com/2020/01/twitter-gpt2-bot/
 import twint
 import fire
 import csv
@@ -53,8 +53,11 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
   else:
       c.Links = "exclude"
 
+  # Get the user's information and set the limit to be all their tweets if a limit is not specified
   twint.run.Lookup(c)
-  limit = twint.output.users_list[-1].tweets
+
+  if limit == None:
+    limit = twint.output.users_list[-1].tweets
 
   pattern = r"http\S+|pic\.\S+|\xa0|…"
 
@@ -74,7 +77,7 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
     w = csv.writer(f)
     w.writerow(["tweets"])  # gpt-2-simple expects a CSV header by default
 
-    pbar = tqdm(range(limit), desc="Creating CSV:")
+    pbar = tqdm(range(limit), desc="Oldest Tweet:")
     for i in range((limit // 20) - 1):
       tweet_data = []
 
@@ -137,7 +140,10 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
 
       #print(tweet_data[-1].datetime)
       #oldest_tweet = datetime.utcfromtimestamp(tweet_data[-1].datetime / 1000.0).strftime("%Y-%m-%d %H:%M:%S")
-      #pbar.set_description("Oldest Tweet: " + oldest_tweet)
+      if (tweet_data):
+        #pbar.update(20)
+        oldest_tweet = tweet_data[-1].datetime
+        pbar.set_description("Oldest Tweet: " + oldest_tweet)
 
   pbar.close()
   os.remove(".temp")
