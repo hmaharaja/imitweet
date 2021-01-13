@@ -133,17 +133,21 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
           if tweet != "":
             w.writerow([tweet])
 
-      if i > 0:
-        pbar.update(20)
-      else:
-        pbar.update(40)
+      #if i > 0:
+      #  pbar.update(20)
+      #else:
+      #  pbar.update(40)
 
-      #print(tweet_data[-1].datetime)
-      #oldest_tweet = datetime.utcfromtimestamp(tweet_data[-1].datetime / 1000.0).strftime("%Y-%m-%d %H:%M:%S")
+      # Add something to account for the pbar update if it went into the second for loop and actually got data - then pbar.update(40)
+      
       if (tweet_data):
-        #pbar.update(20)
+        pbar.update(20)
         oldest_tweet = tweet_data[-1].datetime
         pbar.set_description("Oldest Tweet: " + oldest_tweet)
+      
+      else:
+        pbar.update(limit-pbar.n)
+        break
 
   pbar.close()
   os.remove(".temp")
