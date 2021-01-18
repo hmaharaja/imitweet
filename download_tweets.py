@@ -37,6 +37,19 @@ def is_reply(tweet):
     return False
 
 def download_tweets(user=None, limit=None, include_replies=False, include_links=False, strip_usertags=False, strip_hashtags=False):
+  """Download tweets from a given Twitter account
+    into a format suitable for training with AI text generation tools.
+
+    :param username: Twitter @ username to gather tweets.
+    :param limit: # of tweets to gather; None for all tweets.
+    :param include_replies: Whether to include replies to other tweets.
+    :param strip_usertags: Whether to remove user tags from the tweets.
+    :param strip_hashtags: Whether to remove hashtags from the tweets.
+    :param include_links: Whether to include tweets with links.
+
+    :return tweets: List of tweets from the Twitter account
+    """
+
   # According to twint documentation, limit must be a multiple of 20
   if limit:
     while limit % 20 != 0:
@@ -54,7 +67,13 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
       c.Links = "exclude"
 
   # Get the user's information and set the limit to be all their tweets if a limit is not specified
-  twint.run.Lookup(c)
+  try:
+    twint.run.Lookup(c)
+  except:
+    c.Profile_full = True # why doesnt this work as i want it to
+    twint.run.Profile(c)
+  else:
+    print("account might be private")
 
   if limit == None:
     limit = twint.output.users_list[-1].tweets
@@ -152,7 +171,7 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
   pbar.close()
   os.remove(".temp")
 
-# Running directly from the program, not the CLI, to make it easier to turn this into an application
+
 if __name__ == "__main__":
   username = input("Please enter the username of the account you want to imitate, WITHOUT the @: ")
 
