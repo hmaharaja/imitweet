@@ -67,13 +67,7 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
       c.Links = "exclude"
 
   # Get the user's information and set the limit to be all their tweets if a limit is not specified
-  try:
-    twint.run.Lookup(c)
-  except:
-    c.Profile_full = True # why doesnt this work as i want it to
-    twint.run.Profile(c)
-  else:
-    print("account might be private")
+  twint.run.Lookup(c)
 
   if limit == None:
     limit = twint.output.users_list[-1].tweets
