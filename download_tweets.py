@@ -36,8 +36,8 @@ def is_reply(tweet):
         return True
     return False
 
-def download_tweets(user=None, limit=None, include_replies=False, include_links=False, strip_usertags=False, strip_hashtags=False):
-  """Download tweets from a given Twitter account
+def download_user_tweets(user=None, limit=None, include_replies=False, include_links=False, strip_usertags=False, strip_hashtags=False):
+  """Download public tweets from a given Twitter account
     into a format suitable for training with AI text generation tools.
 
     :param username: Twitter @ username to gather tweets.
@@ -94,9 +94,6 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
     for i in range((limit // 20) - 1):
       tweet_data = []
 
-      # Can't run a search if the user is shadowbanned, can somewhat bypass 
-      # this with twint.run.Profile(c) and setting c.Profile_full = True
-
       # twint may fail; give it up to 5 tries to return tweets
       for j in range(0, 4):
         if len(tweet_data) == 0:
@@ -151,10 +148,8 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
       #else:
       #  pbar.update(40)
 
-      # Add something to account for the pbar update if it went into the second for loop and actually got data - then pbar.update(40)
-      
       if (tweet_data):
-        pbar.update(20)
+        pbar.update(len(tweet_data))
         oldest_tweet = tweet_data[-1].datetime
         pbar.set_description("Oldest Tweet: " + oldest_tweet)
       
@@ -165,9 +160,16 @@ def download_tweets(user=None, limit=None, include_replies=False, include_links=
   pbar.close()
   os.remove(".temp")
 
+def download_tweets_containing_string():
+  key_str = "!"
+  while key_str != '':
+    key_str = input("Enter a search query: ")
+  
+  # configure the user
+  twint.run.Search(c)
+
+  # save results to a pandas dataframe and filter, then save to a csv
 
 if __name__ == "__main__":
   username = input("Please enter the username of the account you want to imitate, WITHOUT the @: ")
-
-  # Need to add an exception for when the account searched doesn't exist. Maybe also one for when it doesn't have any tweets.
-  fire.Fire(download_tweets(username))
+  fire.Fire(download_user_tweets(username))
