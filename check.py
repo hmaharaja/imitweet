@@ -10,15 +10,16 @@ import re
 from tqdm import tqdm
 from datetime import datetime
 from time import sleep
+from download_tweets import is_reply
 
+if __name__ == "__main__":
+    c = twint.Config()
+    c.Search = "pineapple"
+    c.Store_object = True
+    c.Hide_output = True
+    c.Limit = 20
 
-c = twint.Config()
-#c.Username = 'hf_dreamcatcher'
-#c.Custom = ['id', 'date', 'time', 'timezone', 'user_id', 'username', 'tweet', 'replies', 
-#            'retweets', 'likes', 'hashtags', 'link', 'retweet', 'user_rt', 'mentions']
-c.Store_csv = True
-c.Search = "pineapple" # filter if the tweet doesn't contain the key phrase
-
-
-# Start search
-twint.run.Search(c)
+    tweetslist = []
+    c.Store_object_tweets_list = tweetslist
+    twint.run.Search(c)
+    print(tweetslist)
